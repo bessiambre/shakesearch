@@ -17,13 +17,13 @@ const STYPE_SCENE="SCENE";
 
 
 class Section{
-	constructor(sectionid,bookid){
-		this.sectionid=sectionid;
-		this.bookid=bookid;
-		this.act=null;
-		this.scene=null;
-		this.type=null;
-		this.content="";
+	constructor(Sectionid,Bookid){
+		this.Sectionid=Sectionid;
+		this.Bookid=Bookid;
+		this.Act="";
+		this.Scene="";
+		this.Stype="";
+		this.Body="";
 	}
 }
 
@@ -31,14 +31,14 @@ class Section{
 
 class Book{
 	constructor(id){
-		this.bookid=id;
-		this.title=null;
-		this.scene=null;
-		this.sections=[];
+		this.Bookid=id;
+		this.Title="";
+		this.Scene="";
+		this.Sections=[];
 	}
-	newSection(sectionid){
-		let section=new Section(sectionid,this.bookid);
-		this.sections.push(section);
+	newSection(Sectionid){
+		let section=new Section(Sectionid,this.Bookid);
+		this.Sections.push(section);
 		return section;
 	}
 }
@@ -58,8 +58,8 @@ async function processLineByLine() {
   let section=null;
   let newlineCnt=3;
   let inSection=null;
-  let sectionid=0;
-  let bookid=0;
+  let Sectionid=0;
+  let Bookid=0;
 
   for await (const line of rl) {
     // Each line in input.txt will be successively available here as `line`.
@@ -71,67 +71,67 @@ async function processLineByLine() {
 	}else{
 		if(newlineCnt>=3 && !trimmedline.startsWith("act") && !trimmedline.startsWith("content") && !trimmedline.startsWith("dramatis") && !line.match(/[a-z]+/) && !line.match(/SCENE/) && !line.match(/ACT/) && !line.match(/INDUCTION/) ){
 			//new book
-			book=new Book(bookid++);
+			book=new Book(Bookid++);
 			
 			books.push(book);
-			book.title=line.trim();
-			section=book.newSection(sectionid++);
+			book.Title=line.trim();
+			section=book.newSection(Sectionid++);
 			inSection=STYPE_BOOKTOP;
 		}else if(inSection===STYPE_BOOKTOP && trimmedline.startsWith("content")){
 			inSection=STYPE_CONTENTS;
-			section=book.newSection(sectionid++);
-			section.type=STYPE_CONTENTS;
+			section=book.newSection(Sectionid++);
+			section.Stype=STYPE_CONTENTS;
 		}else if([STYPE_CONTENTS,STYPE_BOOKTOP].includes(inSection) && trimmedline.startsWith("dramatis")){
 			inSection=STYPE_DRAMATIS;
-			section=book.newSection(sectionid++);
-			section.type=STYPE_DRAMATIS;
+			section=book.newSection(Sectionid++);
+			section.Stype=STYPE_DRAMATIS;
 		}else if(inSection===STYPE_DRAMATIS){
 			if(trimmedline.startsWith('scene:')){
-				book.scene=line.match(/scene:(.+)/i)[1].trim();
+				book.Scene=line.match(/scene:(.+)/i)[1].trim();
 				inSection=STYPE_BOOKSCENE;
-				section=book.newSection(sectionid++);
-				section.type=STYPE_BOOKSCENE;
+				section=book.newSection(Sectionid++);
+				section.Stype=STYPE_BOOKSCENE;
 			}
 		}else if(![STYPE_CONTENTS,STYPE_DRAMATIS].includes(inSection)){
 			if(inSection===STYPE_BOOKSCENE){
-				section=book.newSection(sectionid++);
+				section=book.newSection(Sectionid++);
 				inSection=STYPE_SCENE;
 			}
 
 			let m=line.match(/ACT (\w+)/);
 			if(m!==null){
-				if(section.act!==null){
-					section=book.newSection(sectionid++);
+				if(section.Act!==""){
+					section=book.newSection(Sectionid++);
 				}
-				section.act=m[1];
+				section.Act=m[1];
 			}
 			m=line.match(/INDUCTION/);
-			if(m!==null && section.act===null){
-				section.act="INDUCTION";
-				section.type=STYPE_SCENE;
+			if(m!==null && section.Act===""){
+				section.Act="INDUCTION";
+				section.Stype=STYPE_SCENE;
 			}
 			m=line.match(/SCENE (\w+)/);
 			if(m!==null){
-				if(section.scene!==null){
-					let prevAct=section.act;
-					section=book.newSection(sectionid++);
-					section.act=prevAct;
+				if(section.Scene!==""){
+					let prevAct=section.Act;
+					section=book.newSection(Sectionid++);
+					section.Act=prevAct;
 				}
-				section.scene=m[1];
-				section.type=STYPE_SCENE;
+				section.Scene=m[1];
+				section.Stype=STYPE_SCENE;
 			}
 			m=line.match(/PROLOGUE/);
-			if(m!==null && section.scene===null){
-				section.scene="PROLOGUE";
-				section.type=STYPE_PROLOGUE;
+			if(m!==null && section.Scene===""){
+				section.Scene="PROLOGUE";
+				section.Stype=STYPE_PROLOGUE;
 			}
 		}
 
 		newlineCnt=0;
 	}
 	if(section!==null){
-		if(line.length>0 || !section.content.endsWith("\n\n")){
-			section.content+=line+"\n";
+		if(line.length>0 || !section.Body.endsWith("\n\n")){
+			section.Body+=line+"\n";
 		}
 	}else{
 		console.error("Missing section");
