@@ -16,6 +16,9 @@ import (
 
 func main() {
 	searcher := Searcher{}
+	
+	wordBoundaryRe = regexp.MustCompile(`[\w-]+`)
+
 	err := searcher.Load("books.json")
 	if err != nil {
 		log.Fatal(err)
@@ -80,6 +83,8 @@ type SearchResult struct {
 	Exerpt string
 }
 
+var wordBoundaryRe *regexp.Regexp
+
 func handleSearch(searcher Searcher) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		query, ok := r.URL.Query()["q"]
@@ -113,8 +118,6 @@ func (s *Searcher) Load(filename string) error {
 		return fmt.Errorf("Load: %w", err)
 	}
 
-	wordBoundaryRe := regexp.MustCompile(`[\w-]+`);
-
 	var stemmedtextsb strings.Builder;
 	wordCount := 0;
 
@@ -134,7 +137,7 @@ func (s *Searcher) Load(filename string) error {
 				md.Bookid = bookindex
 				md.BookSectionid = sectionindex
 				word:=section.Body[boundary[0]:boundary[1]]
-				stemmedString:=strings.ToLower(word)
+				stemmedString:=stemmWord(word)
 				stemmedtextsb.WriteString(stemmedString);
 				stemmedtextsb.WriteString(" ");
 				for i:=0;i<=len(stemmedString);i++{
@@ -156,7 +159,26 @@ func (s *Searcher) Load(filename string) error {
 	return nil
 }
 
+func stemmWord(s string) string{
+	//TODO maybe do something more sophhisticated
+	return strings.ToLower(s)
+}
+
+func textToCanonicalForm(s string) string {
+	boundaries := wordBoundaryRe.FindAllStringIndex(s,-1);
+	var stemmedtextsb strings.Builder;
+	for _,boundary := range boundaries {
+		word:=s[boundary[0]:boundary[1]]
+		stemmedString:=stemmWord(word)
+		stemmedtextsb.WriteString(stemmedString);
+		stemmedtextsb.WriteString(" ");
+	}
+	return stemmedtextsb.String()
+}
+
 func (s *Searcher) Search(query string) []SearchResult {
+
+	query = textToCanonicalForm(query)
 	idxs := s.SuffixArray.Lookup([]byte(query), -1)
 	results :=make([]SearchResult,0,16);
 
@@ -170,7 +192,7 @@ func (s *Searcher) Search(query string) []SearchResult {
 			if s.Words[s.StemmedtextIndex[endidx]].Bookid == matchword.Bookid && 
 			s.Words[s.StemmedtextIndex[endidx]].BookSectionid == matchword.BookSectionid {
 				endword=&s.Words[s.StemmedtextIndex[endidx]]
-				if endidx<=idx+len([]byte(query)){
+				if endidx<idx+len([]byte(query)){
 					endhighlight=&s.Words[s.StemmedtextIndex[endidx]]
 				}
 			}
