@@ -11,11 +11,12 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"html"
 )
 
 func main() {
 	searcher := Searcher{}
-	err := searcher.Load("completeworks.txt")
+	err := searcher.Load("books.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -54,10 +55,8 @@ type Book struct{
 }
 
 type Searcher struct {
-	CompleteWorks string
 	SuffixArray   *suffixarray.Index
 	Books []Book
-	//rawtext string
 	Stemmedtext string
 	StemmedtextIndex []int
 	Words []WordMetadata
@@ -67,11 +66,18 @@ type WordMetadata struct {
 	WordIdx int
 	StartPosRaw int
 	EndPosRaw int
-	//StartPosStm int
-	//EndPostStm int
 	Bookid int
 	BookSectionid int
-	//Sectionid int
+}
+
+type SearchResult struct {
+	Bookid int
+	BookSectionid int
+	Title string
+	BookScene string
+	Act string
+	Scene string
+	Exerpt string
 }
 
 func handleSearch(searcher Searcher) func(w http.ResponseWriter, r *http.Request) {
@@ -97,7 +103,7 @@ func handleSearch(searcher Searcher) func(w http.ResponseWriter, r *http.Request
 }
 
 func (s *Searcher) Load(filename string) error {
-	dat, err := ioutil.ReadFile("books.json")
+	dat, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return fmt.Errorf("Load: %w", err)
 	}
@@ -140,42 +146,53 @@ func (s *Searcher) Load(filename string) error {
 		}
 	}
 	s.Stemmedtext+=stemmedtextsb.String()
-	//fmt.Println(s.Stemmedtext[0:100])
-	//fmt.Println(s.StemmedtextIndex[0:100])
-	//fmt.Println(s.Words[50000:50100])
 
 	s.SuffixArray = suffixarray.New([]byte(s.Stemmedtext))
-	s.CompleteWorks = s.Stemmedtext
 
-	if(len(s.StemmedtextIndex)!=len(s.Stemmedtext)){
+	if len(s.StemmedtextIndex)!=len(s.Stemmedtext) {
 		return fmt.Errorf("len(s.StemmedtextIndex)!=len(s.Stemmedtext)");
 	}
 
 	return nil
 }
 
-func (s *Searcher) Search(query string) []string {
+func (s *Searcher) Search(query string) []SearchResult {
 	idxs := s.SuffixArray.Lookup([]byte(query), -1)
-	results := []string{}
-	for _, idx := range idxs {
+	results :=make([]SearchResult,0,16);
 
+	for _, idx := range idxs {
+		result := SearchResult{}
 		matchword := &s.Words[s.StemmedtextIndex[idx]]
+		endhighlight := matchword
 		endword := matchword
 		startword := matchword
-		for endidx:=idx;endidx<len(s.StemmedtextIndex) && endidx<idx+200;endidx++{
-			if(s.Words[s.StemmedtextIndex[endidx]].Bookid == matchword.Bookid && 
-			s.Words[s.StemmedtextIndex[endidx]].BookSectionid == matchword.BookSectionid){
+		for endidx:=idx;endidx<len(s.StemmedtextIndex) && endidx<idx+200;endidx++ {
+			if s.Words[s.StemmedtextIndex[endidx]].Bookid == matchword.Bookid && 
+			s.Words[s.StemmedtextIndex[endidx]].BookSectionid == matchword.BookSectionid {
 				endword=&s.Words[s.StemmedtextIndex[endidx]]
+				if endidx<=idx+len([]byte(query)){
+					endhighlight=&s.Words[s.StemmedtextIndex[endidx]]
+				}
 			}
 		}
-		for startidx:=idx;startidx>0 && startidx>idx-200;startidx--{
-			if(s.Words[s.StemmedtextIndex[startidx]].Bookid == matchword.Bookid && 
-			s.Words[s.StemmedtextIndex[startidx]].BookSectionid == matchword.BookSectionid){
+		for startidx:=idx;startidx>0 && startidx>idx-200;startidx-- {
+			if s.Words[s.StemmedtextIndex[startidx]].Bookid == matchword.Bookid && 
+			s.Words[s.StemmedtextIndex[startidx]].BookSectionid == matchword.BookSectionid {
 				startword=&s.Words[s.StemmedtextIndex[startidx]]
 			}
 		}
-
-		results = append(results, s.Books[matchword.Bookid].Sections[matchword.BookSectionid].Body[startword.StartPosRaw:endword.EndPosRaw])
+		result.Bookid=s.Books[matchword.Bookid].Bookid
+		result.BookSectionid=matchword.BookSectionid
+		result.Title=s.Books[matchword.Bookid].Title
+		result.BookScene=s.Books[matchword.Bookid].Scene
+		result.Act=s.Books[matchword.Bookid].Sections[matchword.BookSectionid].Act
+		result.Scene=s.Books[matchword.Bookid].Sections[matchword.BookSectionid].Scene
+		result.Exerpt=html.EscapeString(s.Books[matchword.Bookid].Sections[matchword.BookSectionid].Body[startword.StartPosRaw:matchword.StartPosRaw])+
+		"<mark>"+
+		html.EscapeString(s.Books[matchword.Bookid].Sections[matchword.BookSectionid].Body[matchword.StartPosRaw:endhighlight.EndPosRaw])+
+		"</mark>"+
+		html.EscapeString(s.Books[matchword.Bookid].Sections[matchword.BookSectionid].Body[endhighlight.EndPosRaw:endword.EndPosRaw])
+		results = append(results, result)
 	}
 
 	return results

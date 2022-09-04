@@ -25,7 +25,7 @@ function App() {
 		</div>
 		<div>
 			<table id="table">
-				<tbody id="table-body">{searchResults.map((res)=>(<tr>{res}</tr>))}</tbody>
+				<tbody id="table-body">{searchResults.map((res)=>(<tr>{JSON.stringify(res)}</tr>))}</tbody>
 			</table>
 		</div>
 	</div>
