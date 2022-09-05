@@ -11,7 +11,6 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"html"
 )
 
 func main() {
@@ -80,7 +79,9 @@ type SearchResult struct {
 	BookScene string
 	Act string
 	Scene string
-	Exerpt string
+	ExcerptPre string
+	Excerpt string
+	ExcerptPost string
 }
 
 var wordBoundaryRe *regexp.Regexp
@@ -173,7 +174,8 @@ func textToCanonicalForm(s string) string {
 		stemmedtextsb.WriteString(stemmedString);
 		stemmedtextsb.WriteString(" ");
 	}
-	return stemmedtextsb.String()
+	ret := stemmedtextsb.String()
+	return ret[0:len(ret)-1]
 }
 
 func (s *Searcher) Search(query string) []SearchResult {
@@ -209,11 +211,9 @@ func (s *Searcher) Search(query string) []SearchResult {
 		result.BookScene=s.Books[matchword.Bookid].Scene
 		result.Act=s.Books[matchword.Bookid].Sections[matchword.BookSectionid].Act
 		result.Scene=s.Books[matchword.Bookid].Sections[matchword.BookSectionid].Scene
-		result.Exerpt=html.EscapeString(s.Books[matchword.Bookid].Sections[matchword.BookSectionid].Body[startword.StartPosRaw:matchword.StartPosRaw])+
-		"<mark>"+
-		html.EscapeString(s.Books[matchword.Bookid].Sections[matchword.BookSectionid].Body[matchword.StartPosRaw:endhighlight.EndPosRaw])+
-		"</mark>"+
-		html.EscapeString(s.Books[matchword.Bookid].Sections[matchword.BookSectionid].Body[endhighlight.EndPosRaw:endword.EndPosRaw])
+		result.ExcerptPre=s.Books[matchword.Bookid].Sections[matchword.BookSectionid].Body[startword.StartPosRaw:matchword.StartPosRaw]
+		result.Excerpt=s.Books[matchword.Bookid].Sections[matchword.BookSectionid].Body[matchword.StartPosRaw:endhighlight.EndPosRaw]
+		result.ExcerptPost=s.Books[matchword.Bookid].Sections[matchword.BookSectionid].Body[endhighlight.EndPosRaw:endword.EndPosRaw]
 		results = append(results, result)
 	}
 
