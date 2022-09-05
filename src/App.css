@@ -344,7 +344,6 @@ footer {
   }
 
   #modal{
-    display:none;
     overflow-x: hidden;
     overflow-y: auto;
     z-index: 1000;
@@ -356,7 +355,8 @@ footer {
     bottom: 0;
     left: 0;
     background-color: #00000070;
-    text-align: center;
+	text-align: center;
+	scroll-padding-top: 10rem;
   }
 
   #modal.visible{
@@ -600,7 +600,7 @@ text-align: center;
 
 .excerpt{
 	font-size: 1rem;
-	color: rgb(59, 59, 59);
+	color: rgb(66, 66, 66);
 }
 
 mark{
@@ -630,3 +630,28 @@ mark{
 	transform: rotate(360deg);
 }
 
+.sectionPreviewBody{
+	white-space: pre-line;
+}
+
+.bookPreview{
+	max-width: 48rem;
+	padding:2rem;
+	text-align: left;
+}
+
+.bookPreview>h2{
+	text-align: center;
+}
+.bookPreview>h4{
+	text-align: center;
+}
+.closeBut{
+	width:2rem;
+	height:2rem;
+	font-size: 2rem;
+	line-height: 2rem;
+	float: right;
+	cursor: pointer;
+	color: gray;
+}
