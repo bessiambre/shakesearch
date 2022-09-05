@@ -78,7 +78,7 @@
 	margin-top: 19vh;
 	margin-bottom: 19vh;
 	transition-property: margin;
-  	transition-duration: 0.5s;
+  	transition-duration: 0.4s;
   }
   h1.tm.results{
 	margin-top: 3vh;
@@ -295,8 +295,8 @@ footer {
 
   .card{
     background-color: white;
-    border-radius: 6px;
-    box-shadow: 0px 3px 6px #0000004b;
+    border-radius: 10px;
+    box-shadow: 0px 2px 12px #00000013;
     padding:1rem;
     margin: 0.5rem 0;
   }
@@ -309,7 +309,7 @@ footer {
 
   .mainColumn{
     margin: 0 auto;
-    max-width: 54rem;
+    max-width: 48rem;
     padding: 1rem;
   }
 
@@ -573,8 +573,13 @@ text-align: center;
 }
 
 .searchres{
+	background-color: white;
+    border-radius: 1rem;
+    box-shadow: 0px 2px 12px #00000013;
 	display: flex;
-	margin:2rem 0;
+	margin:1rem 0;
+	padding:1rem 0.5rem;
+	cursor: pointer;
 }
 
 .searchresleft{
@@ -584,9 +589,44 @@ text-align: center;
 
 .searchresright{
 	flex:1 1 auto;
-	padding-left: 0.5rem;
+	padding-left: 2rem;
 	white-space: pre-line;
 }
-  
 
+.actscene{
+	color:black;
+	font-size: 0.9rem;
+}
+
+.excerpt{
+	font-size: 1rem;
+	color: rgb(59, 59, 59);
+}
+
+mark{
+	background-color:transparent;
+	font-weight: 700;
+	color: rgb(13, 54, 40);
+}
+
+.qut{
+	font-size: 1.6rem;
+}
+.morebut{
+	width: 10rem;
+	margin: 0 auto;
+	padding:1rem;
+	text-align: center;
+	cursor: pointer;
+	color:#3498db;
+}
+
+.main{
+	transition-property: transform;
+	transition-duration: 1s;
+}
+
+.main.roll{
+	transform: rotate(360deg);
+}
 

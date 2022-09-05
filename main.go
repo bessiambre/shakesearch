@@ -11,6 +11,9 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"strconv"
+	"sort"
+	"github.com/dchest/stemmer/porter2"
 )
 
 func main() {
@@ -82,6 +85,7 @@ type SearchResult struct {
 	ExcerptPre string
 	Excerpt string
 	ExcerptPost string
+	Key int
 }
 
 var wordBoundaryRe *regexp.Regexp
@@ -94,7 +98,19 @@ func handleSearch(searcher Searcher) func(w http.ResponseWriter, r *http.Request
 			w.Write([]byte("missing search query in URL params"))
 			return
 		}
-		results := searcher.Search(query[0])
+		limitstr, limitok := r.URL.Query()["limit"]
+		var limit int
+		
+		if !limitok || len(query[0]) < 1 {
+			limit=1000
+		}else{
+			limit,_=strconv.Atoi(limitstr[0])
+			if limit==0 {
+				limit=1000
+			}
+		}
+
+		results := searcher.Search(query[0],limit)
 		buf := &bytes.Buffer{}
 		enc := json.NewEncoder(buf)
 		err := enc.Encode(results)
@@ -161,8 +177,8 @@ func (s *Searcher) Load(filename string) error {
 }
 
 func stemmWord(s string) string{
-	//TODO maybe do something more sophhisticated
-	return strings.ToLower(s)
+	return porter2.Stemmer.Stem(s)
+	//return strings.ToLower(s)
 }
 
 func textToCanonicalForm(s string) string {
@@ -178,19 +194,23 @@ func textToCanonicalForm(s string) string {
 	return ret[0:len(ret)-1]
 }
 
-func (s *Searcher) Search(query string) []SearchResult {
+func (s *Searcher) Search(query string, limit int) []SearchResult {
 
 	query = textToCanonicalForm(query)
 	idxs := s.SuffixArray.Lookup([]byte(query), -1)
+	sort.Ints(idxs)
 	results :=make([]SearchResult,0,16);
 
-	for _, idx := range idxs {
+	for i, idx := range idxs {
+		if i==limit {
+			break
+		}
 		result := SearchResult{}
 		matchword := &s.Words[s.StemmedtextIndex[idx]]
 		endhighlight := matchword
 		endword := matchword
 		startword := matchword
-		for endidx:=idx;endidx<len(s.StemmedtextIndex) && endidx<idx+200;endidx++ {
+		for endidx:=idx;endidx<len(s.StemmedtextIndex) && endidx<idx+500;endidx++ {
 			if s.Words[s.StemmedtextIndex[endidx]].Bookid == matchword.Bookid && 
 			s.Words[s.StemmedtextIndex[endidx]].BookSectionid == matchword.BookSectionid {
 				endword=&s.Words[s.StemmedtextIndex[endidx]]
@@ -199,7 +219,7 @@ func (s *Searcher) Search(query string) []SearchResult {
 				}
 			}
 		}
-		for startidx:=idx;startidx>0 && startidx>idx-200;startidx-- {
+		for startidx:=idx;startidx>0 && startidx>idx-500;startidx-- {
 			if s.Words[s.StemmedtextIndex[startidx]].Bookid == matchword.Bookid && 
 			s.Words[s.StemmedtextIndex[startidx]].BookSectionid == matchword.BookSectionid {
 				startword=&s.Words[s.StemmedtextIndex[startidx]]
@@ -214,6 +234,7 @@ func (s *Searcher) Search(query string) []SearchResult {
 		result.ExcerptPre=s.Books[matchword.Bookid].Sections[matchword.BookSectionid].Body[startword.StartPosRaw:matchword.StartPosRaw]
 		result.Excerpt=s.Books[matchword.Bookid].Sections[matchword.BookSectionid].Body[matchword.StartPosRaw:endhighlight.EndPosRaw]
 		result.ExcerptPost=s.Books[matchword.Bookid].Sections[matchword.BookSectionid].Body[endhighlight.EndPosRaw:endword.EndPosRaw]
+		result.Key=idx
 		results = append(results, result)
 	}
 
