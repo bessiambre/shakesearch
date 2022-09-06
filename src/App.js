@@ -102,7 +102,7 @@ function SearchResult(props){
 function App() {
 
 	const [searchResults, setSearchResults] = useState([]);
-	const [loading, setLoading] = useState(false);
+	const [firstLoad, setFirstLoad] = useState(false);
 	const [roll,setRoll] = useState(false);
 	let [limit, setLimit] = useState(40);
 	const [bookPreview, setBookPreview] = useState(null);
@@ -110,7 +110,7 @@ function App() {
 
 	let search=async function (ev) {
 		ev.preventDefault();
-		setLoading(true);
+		setFirstLoad(true);
 		const form = document.getElementById("form");
 		const data = Object.fromEntries(new FormData(form));
 		if(data.query.toLowerCase()==="do a barrel roll"){
@@ -136,7 +136,7 @@ function App() {
 	<div className={roll?"main roll":"main"}>
 		{bookPreview && <Modal onHide={()=>setBookPreview(null)}><BookPreview book={bookPreview} onHide={()=>setBookPreview(null)}></BookPreview></Modal>}
 		<div className="mainColumn">
-			<h1 className={searchResults.length>0 || loading ? 'tm results' : 'tm'}><img src="logo192.png" width="64" height="64" style={{verticalAlign:'middle',marginBottom: '14px'}} alt="Shakespeare logo"></img> ShakeShakeGo</h1>
+			<h1 className={searchResults.length>0 || firstLoad ? 'tm results' : 'tm'}><img src="logo192.png" width="64" height="64" style={{verticalAlign:'middle',marginBottom: '14px'}} alt="Shakespeare logo"></img> ShakeShakeGo</h1>
 			<form id="form" onSubmit={search}>
 				<div className="searchBox"><input type="text" id="query" name="query" placeholder="That is the question" autoFocus></input>
 				<button type="submit">Search</button></div>
@@ -146,7 +146,7 @@ function App() {
 			<div>
 				{searchResults.length>0?
 				searchResults.map((res)=>(<SearchResult result={res} key={res.WordIdx} handlePreview={(book)=>handlePreview(book)}></SearchResult>)):
-				<div class="noresults">No results found</div>
+				<div className="noresults">{firstLoad && "No results found"}</div>
 				}
 			</div>
 		</div>
