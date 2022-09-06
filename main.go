@@ -19,8 +19,6 @@ import (
 
 func main() {
 	searcher := Searcher{}
-	
-	wordBoundaryRe = regexp.MustCompile(`[\w-]+`)
 
 	err := searcher.Load("books.json")
 	if err != nil {
@@ -198,6 +196,8 @@ func handleGetBook(searcher Searcher) func(w http.ResponseWriter, r *http.Reques
 }
 
 func (s *Searcher) Load(filename string) error {
+	wordBoundaryRe = regexp.MustCompile(`[\w-]+`)
+	
 	dat, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return fmt.Errorf("Load: %w", err)

@@ -654,4 +654,7 @@ mark{
 	float: right;
 	cursor: pointer;
 	color: gray;
+	position: fixed;
+	right: 2rem;
+    top: 2rem;
 }

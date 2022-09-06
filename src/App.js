@@ -51,11 +51,12 @@ function SectionPreview(props){
 
 function BookPreview(props){
 	return (
-		<div class="bookPreview" onClick={(e)=>e.stopPropagation()}>
+		<div className="bookPreview" onClick={(e)=>e.stopPropagation()}>
 			<div className="closeBut" onClick={props.onHide}>✕</div>
 			<h2>{props.book.Title}</h2>
 			<h4>{props.book.Scene && `Scene: ${props.book.Scene}`}</h4>
-			{props.book.Sections.map((s)=>(<SectionPreview section={s}></SectionPreview>))}
+			<br></br>
+			{props.book.Sections.map((s)=>(<SectionPreview section={s} key={s.Sectionid}></SectionPreview>))}
 		</div>
 	);
 }
@@ -91,7 +92,7 @@ function SearchResult(props){
 		<div className="searchresleft">
 			<div className="book" style={bookStyle} onClick={()=>bookPreview()}><div className="bookhead">William Shakespeare's</div><div className="booktitle">{props.result.Title}</div></div>
 		</div>
-		<div className="searchresright" onClick={()=>setfullText(true)}>
+		<div className="searchresright" onClick={()=>setfullText(!fullText)}>
 		<div className="actscene">{actscene.join(', ')}</div>
 		<div className="excerpt"><span className="qut">“</span>{fullText?props.result.ExcerptPre.replace(/^\s+/g, ''):props.result.ExcerptPre.slice(Math.max(props.result.ExcerptPre.length-100,0)).replace(/^\s+/g, '')}<mark>{props.result.Excerpt}</mark>{fullText?props.result.ExcerptPost.replace(/\s+$/g, ''):props.result.ExcerptPost.slice(0,100).replace(/\s+$/g, '')}<span className="qut"> „</span></div>
 		</div>

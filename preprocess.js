@@ -5,7 +5,6 @@ const fs = require('fs');
 const readline = require('readline');
 
 
-
 const STYPE_BOOKTOP="BOOKTOP";
 const STYPE_CONTENTS="CONTENTS";
 const STYPE_DRAMATIS="DRAMATIS";
@@ -13,7 +12,6 @@ const STYPE_BOOKSCENE="BOOKSCENE";
 const STYPE_INDUC="INDUC";
 const STYPE_PROLOGUE="PROLOGUE";
 const STYPE_SCENE="SCENE";
-
 
 
 class Section{
@@ -72,7 +70,6 @@ async function processLineByLine() {
 		if(newlineCnt>=3 && !trimmedline.startsWith("act") && !trimmedline.startsWith("content") && !trimmedline.startsWith("dramatis") && !line.match(/[a-z]+/) && !line.match(/SCENE/) && !line.match(/ACT/) && !line.match(/INDUCTION/) ){
 			//new book
 			book=new Book(Bookid++);
-			
 			books.push(book);
 			book.Title=line.trim();
 			section=book.newSection(Sectionid++);
@@ -133,8 +130,6 @@ async function processLineByLine() {
 		if(line.length>0 || !section.Body.endsWith("\n\n")){
 			section.Body+=line+"\n";
 		}
-	}else{
-		console.error("Missing section");
 	}
   }
   return books;
