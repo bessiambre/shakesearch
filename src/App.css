@@ -658,3 +658,7 @@ mark{
 	right: 2rem;
     top: 2rem;
 }
+
+.noresults{
+	text-align: center;
+}

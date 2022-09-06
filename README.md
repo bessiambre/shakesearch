@@ -32,19 +32,20 @@ We will be primarily evaluating based on how well the search works for users. A 
 
 ## Features and implementation
 
-- Ported front end to React, expanded the go backend, there is also a nodejs preprocessing script.
-- Words are stemmed with the Porter algorithm ( http://snowball.tartarus.org/algorithms/english/stemmer.html ) to allow for fuzzier matching (on top of ignoring capitalization).
-- The backend is built around the original suffix array since it's such an efficient data structure. The suffix array is however built from the stemmed and lower-cased text. At load time, a word by word mapping from the stemmed text to the original text is built. It can then be used to generate excerpts and previews for search results.
+Deployed at https://shakesearch2.herokuapp.com/
+
+- Ported front end to React. Built new logic into the go backend, there is also a nodejs preprocessing script that splits the text into books and subsections.
+- The go backend is built around the original suffix array data structure since it's so efficient. The suffix array is however built from stemmed and lower-cased text. Word stemming is done with the Porter algorithm ( http://snowball.tartarus.org/algorithms/english/stemmer.html ) to allow for fuzzy matching (capitalization is also ignored). A word by word map from the stemmed text to the original text is also built. It can then be used to generate excerpts and previews for search results that display the raw text with original wording and formatting instead if the stemmed text.
 - Mock book covers have a color hue generated from a hash of the title.
-- You can open a full book preview. It will automatically scroll to your search result.
+- You can open a full book preview and it will automatically scroll to the search result.
 
 ## Installation
 
-This runs as is on Heroku with the nodejs and go builpacks. To run a dev environment locally:
+This runs as-is on Heroku with the nodejs and go buildpacks. To run a dev environment locally:
 
     npm install
 
-	npm run build #this will run the completeworks preprocessor
+	npm run build #this will run the preprocessor on completeworks2.txt 
 
 	go install
 
@@ -53,15 +54,19 @@ This runs as is on Heroku with the nodejs and go builpacks. To run a dev environ
 	npm run devstart
  
 ## If I had more time
--Maybe reformat books into a more consistent format (although, apparently sometimes using the original layout is important. I don't know if the Gutenberg texts are accurate).
--Better pagination for results and maybe for book previews.
--More automated tests
--URL router functionality so that the browser back button can be used for navigation between screens and queries.
--"Did you mean?" functionality for correctoing user typos
--Horizontal scaling of the deployment.
--Monitoring of errors, crashes and uptime.
--Improve layout for mobile (it's responsive but I didn't do a lot of testing on mobile)
--Dark theme.
+- Maybe reformat books into a more consistent format (although, apparently sometimes using the original layout is important. I don't know if the Gutenberg texts are accurate).
+- Spend some time trying different search result layout formats, fonts etc. to get to that "pixel perfect" design.
+- Better pagination for results and maybe for book previews.
+- URL router functionality so that the browser back button can be used for navigation between screens and search queries.
+- More automated tests
+- "Did you mean?" functionality for correcting user typos, based on word frequency statistics or even search statistics
+- Horizontal scaling of the deployment.
+- Monitoring of errors, crashes and uptime.
+- Improve layout for mobile (it's responsive but I didn't do a lot of testing on mobile)
+- Dark theme.
+- Use ElasticSearch for more query flexibility? The suffix array approach works pretty well though.
+- Postgresql backend for persisting user settings, searches, usage statistics etc.
+- Get the go code reviewed by an seasoned go programmer for feedback and tips, this was my first go project. It's quite an elegant language.
 
 ## Easter eggs, search for:
 

@@ -119,9 +119,13 @@ function App() {
 		if(data.query==="/bb|[^b]{2}/"){
 			data.query="To be or not to be";
 		}
-		const response = await fetch(`/search?q=${data.query}&limit=${limit}`);
-		const results = await response.json();
-		setSearchResults(results);
+		if(data.query===""){
+			setSearchResults([]);
+		}else{
+			const response = await fetch(`/search?q=${data.query}&limit=${limit}`);
+			const results = await response.json();
+			setSearchResults(results);
+		}
 	};
 
 	let handlePreview=function(book){
@@ -140,7 +144,10 @@ function App() {
 		</div>
 		<div className="mainColumn">
 			<div>
-				{searchResults.map((res)=>(<SearchResult result={res} key={res.WordIdx} handlePreview={(book)=>handlePreview(book)}></SearchResult>))}
+				{searchResults.length>0?
+				searchResults.map((res)=>(<SearchResult result={res} key={res.WordIdx} handlePreview={(book)=>handlePreview(book)}></SearchResult>)):
+				<div class="noresults">No results found</div>
+				}
 			</div>
 		</div>
 		{searchResults.length===limit &&
